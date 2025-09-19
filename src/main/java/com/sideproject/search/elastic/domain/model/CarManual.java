@@ -5,12 +5,15 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Document(indexName = "car-manuals")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CarManual {
 	
 	@Id

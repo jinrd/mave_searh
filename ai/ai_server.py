@@ -20,3 +20,8 @@ def get_embedding(request: TextRequest):
 
     # JSON 으로 보내기 위해 리스트로 변환
     return {"embedding": embedding.tolist()}
+
+# 이 파일을 실행하기 위해서 source venv/bin/activate 실행하여 가상화 환경 만든 후에
+# uvicorn ai.ai_server:app --reload 명령어로 Unicorn 고성능 서버 실행
+# 서버 설치는
+# python -m pip install uvicorn fastapi "sentence-transformers[ko]"

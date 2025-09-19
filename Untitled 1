@@ -1,0 +1,143 @@
+1. Elasticsearch 실행
+docker run -d --name elasticsearch -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e "xpack.security.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+
+   * docker run: 새 컨테이너를 실행하는 기본 명령어입니다.
+   * -d: Detached 모드. 컨테이너를 백그라운드에서 실행시킵니다. 이 옵션이 없으면 터미널이 Elasticsearch
+     로그로 가득 차고, 해당 터미널로는 다른 작업을 할 수 없게 됩니다.
+   * --name elasticsearch: 컨테이너에 elasticsearch라는 고유한 이름을 붙여줍니다. 앞으로 이 이름을
+     사용해 컨테이너를 제어(재시작, 중지 등)할 수 있습니다.
+   * -p 9200:9200: 포트 포워딩(Port Forwarding). 가장 중요한 부분 중 하나입니다.
+       * [내 컴퓨터의 포트]:[컨테이너 내부의 포트] 형식을 가집니다.
+       * 컨테이너 내부에서 9200번 포트로 실행되는 Elasticsearch 서비스를, 외부 내 컴퓨터의 9200번 포트와
+         연결합니다.
+       * 이 설정을 통해 내 컴퓨터에서 실행되는 Spring Boot 애플리케이션이 localhost:9200으로
+         Elasticsearch에 접속할 수 있게 됩니다. (9300 포트는 Elasticsearch 노드 간 통신용입니다.)
+   * -e "...": 환경 변수(Environment Variable) 설정. 컨테이너 내부의 환경 변수를 설정하여
+     Elasticsearch의 동작을 제어합니다.
+       * discovery.type=single-node: 여러 Elasticsearch 서버를 묶는 '클러스터' 모드 대신, 개발용으로
+         혼자 실행되는 '단일 노드' 모드로 실행되도록 설정합니다.
+       * xpack.security.enabled=false: ID/비밀번호 같은 보안 기능을 비활성화합니다. 개발 환경에서 쉽게
+         접속하기 위함이며, 실제 운영 환경에서는 true로 설정해야 합니다.
+   * docker.elastic.co/...:8.11.1: 실행할 Docker 이미지의 이름과 버전입니다. "Elastic사의 Elasticsearch
+     8.11.1 버전 공식 이미지를 사용하라"는 의미입니다.
+
+2. nori 분석기 설치
+docker exec -it elasticsearch bin/elasticsearch-plugin install analysis-nori
+   * docker exec: 실행 중인 컨테이너 내부에서 명령어를 실행합니다.
+   * -it: 컨테이너의 터미널과 상호작용(Interactive)할 수 있도록 설정합니다. 플러그인 설치 과정의 로그를
+     실시간으로 보거나, 설치 중 나타나는 질문에 답할 때 필요합니다.
+   * elasticsearch: 명령어를 실행할 대상 컨테이너의 이름입니다. (1번 명령어에서 --name으로 지정한 이름)
+   * bin/elasticsearch-plugin install analysis-nori: 컨테이너 내부에서 실제로 실행될 명령어입니다.
+       * bin/elasticsearch-plugin은 Elasticsearch가 제공하는 플러그인 관리 도구입니다.
+       * 이 도구를 사용해 analysis-nori(한국어 형태소 분석기) 플러그인을 설치하라고 지시하는 것입니다.
+       
+3. 컨테이너 재시작
+docker restart elasticsearch
+
+	* 이유: Elasticsearch는 시작될 때 자신의 플러그인 폴더를 읽어 플러그인들을 로딩합니다. 2번 단계에서
+     nori 플러그인을 새로 설치했기 때문에, Elasticsearch가 이 플러그인을 인식하고 사용할 수 있도록
+     재시작을 통해 다시 로딩하게 하는 것입니다.
+
+     
+     
+     
+
+  1. Elasticsearch 데이터베이스 서버
+
+
+   * 역할: 모든 데이터(텍스트, 벡터)를 저장하고 검색하는 데이터베이스입니다.
+   * 실행 방법: Docker를 통해 실행합니다. 컴퓨터를 재시작하면 Docker는 실행되지만, 컨테이너는 중지된
+     상태일 수 있습니다.
+   * 명령어:
+
+   1     # 중지된 elasticsearch 컨테이너를 다시 시작
+   2     docker start elasticsearch
+
+   * 확인: docker ps 명령어를 실행했을 때 elasticsearch 컨테이너가 목록에 보이면 됩니다.
+
+  2. Python AI 서버
+
+
+   * 역할: 텍스트를 벡터로 변환해주는 'AI 전문의'입니다.
+   * 실행 방법: 프로젝트 폴더로 이동하여, 가상 환경을 활성화하고 uvicorn으로 실행합니다.
+   * 명령어:
+
+
+   1     # 1. 프로젝트 폴더로 이동
+   2     cd /Users/jinwon/springFolder/sideProject/search
+   3 
+   4     # 2. 가상 환경 활성화
+   5     source venv/bin/activate
+   6 
+   7     # 3. AI 서버 실행
+   8     uvicorn ai.ai_server:app --reload
+
+   * 확인: 이 명령어를 실행한 터미널 창이 그대로 유지되면서 Application startup complete 메시지가 보이면
+     됩니다.
+
+
+  3. Java(Spring) 메인 애플리케이션 서버
+
+   * 역할: 실제 사용자 요청을 처리하고, 필요에 따라 다른 두 서버와 통신하는 우리 프로젝트의 본체입니다.
+   * 실행 방법: Gradle Wrapper를 사용하거나, 이클립스 같은 IDE에서 직접 실행합니다.
+   * 명령어:
+
+
+   1     # 프로젝트 폴더에서 실행
+   2     ./gradlew bootRun
+
+   * 확인: Started SearchApplication... 로그가 보이고, DataLoader가 AI 서버와 통신하는 로그가 나타나면
+     성공입니다.
+
+  --
+
+
+
+
+todo list
+
+
+  추천 1: RAG 기능 고도화 및 리팩토링 (가장 추천)
+
+
+  현재 구현을 더 견고하고 확장 가능하게 만드는 단계입니다. 이는 향후 검색 품질 개선(추천 기능 2)이나
+  CI/CD(추천 기능 3)로 나아가기 위한 튼튼한 기반이 됩니다.
+
+  A. 서비스 계층(Service Layer) 분리
+
+
+   * 무엇을 하나요?
+       * RAGService 또는 ChatService 같은 새로운 클래스를 만듭니다.
+       * CarManualController에 있는 RAG 관련 로직(벡터 변환, ES 검색, LLM 호출 등)을 이 서비스 클래스로
+         옮깁니다.
+       * Controller는 단순히 HTTP 요청을 받아 서비스 메소드를 호출하고, 그 결과를 반환하는 역할만
+         하도록 만듭니다.
+   * 왜 해야 하나요?
+       * 관심사 분리(SoC): Controller는 'HTTP 처리', Service는 '비즈니스 로직 처리'라는 각자의 역할에만
+         집중하여 코드가 훨씬 깔끔해지고 이해하기 쉬워집니다.
+       * 유지보수 및 테스트 용이성: 로직이 서비스 계층에 모여있으면 나중에 수정하거나 단위 테스트를
+         작성하기가 매우 편리해집니다.
+
+  B. `RestTemplate`을 `WebClient`로 전환 (성능 개선)
+
+
+   * 무엇을 하나요?
+       * pom.xml에 spring-boot-starter-webflux 의존성을 추가합니다.
+       * RestTemplate 대신 WebClient를 사용하여 임베딩 서버와 LLM 서버를 호출하도록 코드를 수정합니다.
+   * 왜 해야 하나요?
+       * 비동기/논블로킹 처리: RestTemplate은 동기식(blocking)으로 작동하여 외부 API가 응답할 때까지
+         현재 스레드가 기다려야 합니다. 반면 WebClient는 비동기식(non-blocking)이라 요청을 보내놓고
+         다른 일을 하다가, 응답이 오면 그 결과를 처리할 수 있습니다.
+       * 시스템 효율성 증대: 적은 수의 스레드로 더 많은 요청을 처리할 수 있어, 시스템 전체의 성능과
+         확장성을 크게 향상시킬 수 있습니다. 이는 현대적인 웹 애플리케이션의 필수 역량 중 하나입니다.
+
+  C. 설정 값 분리 (`application.properties`)
+
+
+   * 무엇을 하나요?
+       * 코드에 하드코딩된 LLM 모델명, 인덱스명, 서버 주소 등을 application.properties 파일로 옮깁니다.
+       * @Value 어노테이션을 사용하여 이 값들을 코드에서 읽어와 사용합니다. (이미 llm.api.url에
+         적용하고 계신 방식입니다.)
+   * 왜 해야 하나요?
+       * 유연성 및 이식성: 코드를 재컴파일하지 않고 설정 파일만 변경하여 다른 모델(예: gpt-4)이나 다른
+         서버 주소를 사용하도록 쉽게 바꿀 수 있습니다.
