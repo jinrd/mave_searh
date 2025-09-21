@@ -48,6 +48,6 @@ public class CarManualController {
 
     @GetMapping("/semantic-search")
     public String semanticSearch(@RequestParam("question") String question) throws IOException {
-        return ragService.getanswer(question);
+        return ragService.getAnswer(question);
     }
 }

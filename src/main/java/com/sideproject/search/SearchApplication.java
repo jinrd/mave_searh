@@ -11,9 +11,4 @@ public class SearchApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SearchApplication.class, args);
 	}
-
-	@Bean
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
-	}
 }
