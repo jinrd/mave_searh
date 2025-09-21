@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>차량 매뉴얼 RAG 챗봇</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>차량 매뉴얼 챗봇</h1>
+            <p>궁금한 점을 무엇이든 물어보세요.</p>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Chat messages will be appended here -->
+            <div class="message bot-message">
+                <p>안녕하세요! 차량 매뉴얼에 대해 궁금한 점을 질문해주세요.</p>
+            </div>
+        </div>
+        <div class="chat-input-form">
+            <form id="chat-form">
+                <input type="text" id="message-input" placeholder="메시지를 입력하세요..." autocomplete="off" required>
+                <button type="submit">전송</button>
+            </form>
+        </div>
+    </div>
+    <script src="/script.js"></script>
+</body>
+</html>

@@ -57,7 +57,7 @@ public class RAGService {
         this.elasticsearchClient = elasticsearchClient;
     }
 
-    public String getanswer(String question) throws IOException {
+    public String getAnswer(String question) throws IOException {
         System.out.println("의미 기반 검색 질문 : " + question);
 
         // 1. Get query vector from embedding model
