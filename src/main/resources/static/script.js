@@ -3,34 +3,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('message-input');
     const chatMessages = document.getElementById('chat-messages');
 
+    // 대화 ID를 저장할 변수
+    let currentConversationId = null;
+
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const question = messageInput.value.trim();
         if (!question) return;
 
-        // 1. Add user message to chat
         addMessage(question, 'user');
         messageInput.value = '';
-
-        // 2. Show typing indicator
         const typingIndicator = addMessage('답변을 생성 중입니다...', 'typing');
 
         try {
-            // 3. Call backend API
-            const response = await fetch(`/api/manuals/semantic-search?question=${encodeURIComponent(question)}`);
-            
-            // 4. Remove typing indicator
-            chatMessages.removeChild(typingIndicator);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                addMessage(`오류가 발생했습니다: ${errorText}`, 'bot');
-                return;
+            // API URL에 conversationId 추가
+            let apiUrl = `/api/manuals/semantic-search?question=${encodeURIComponent(question)}`;
+            if (currentConversationId) {
+                apiUrl += `&conversationId=${currentConversationId}`;
             }
 
-            // 5. Add bot's answer to chat
-            const answer = await response.text();
+            const response = await fetch(apiUrl);
+            chatMessages.removeChild(typingIndicator);
+
+            if (!response.ok) { throw new Error('서버 응답 오류'); }
+
+            // JSON 응답 처리
+            const data = await response.json();
+            const answer = data.answer;
+            
+            // 서버로부터 받은 conversationId를 저장
+            currentConversationId = data.conversationId;
+
             addMessage(answer, 'bot');
 
         } catch (error) {
@@ -42,16 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    /**
-     * Adds a message to the chat window.
-     * @param {string} text - The message content.
-     * @param {string} type - The message type ('user', 'bot', or 'typing').
-     */
     function addMessage(text, type) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
 
-        // Add classes based on the message type using if/else
         if (type === 'user') {
             messageDiv.classList.add('user-message');
         } else if (type === 'bot') {
@@ -65,10 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         messageDiv.appendChild(p);
         chatMessages.appendChild(messageDiv);
-
-        // Scroll to the bottom
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        
         return messageDiv;
     }
 });
