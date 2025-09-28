@@ -41,4 +41,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.DOCKER_USERNAME_LC }}/mave_searh:latest
+          tags: jinrd/mave_searh:latest
