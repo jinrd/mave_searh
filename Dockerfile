@@ -8,6 +8,9 @@ WORKDIR /app
 # 현재 폴더의 모든 파일(소스코드, pom.xml 등) 을 컨테이너의 /app 폴더로 복사한다.
 COPY . .
 
+# Maven Wrapper 파일에 실행 권한 부여
+RUN chmod +x mvnw
+
 # Maven Wrapper 를 사용하여 프로젝트를 빌드한다.
 RUN ./mvnw clean package -DskipTests
 
