@@ -38,3 +38,17 @@ jobs:
       # 4. Maven으로 프로젝트를 테스트하고 빌드(패키징)합니다.
       - name: Build with Maven
         run: ./mvnw clean install -DskipTests
+
+      # 5. Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # 6. Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/login-action@v3
+        with:
+            context: .
+            psuh: true
+            tags: ${{ secrets.DOCKERHUB_USERNAME}}/mave_search:latest # DOCKER HUB
