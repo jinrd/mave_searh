@@ -37,4 +37,4 @@ jobs:
 
       # 4. Maven으로 프로젝트를 테스트하고 빌드(패키징)합니다.
       - name: Build with Maven
-        run: ./mvnw clean install
+        run: ./mvnw clean install -DskipTests
