@@ -23,7 +23,7 @@ jobs:
       - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
-      - name: Build with Maven
+      - name: Build with Maven (CI)
         run: ./mvnw clean package -DskipTests
 
       - name: Login to Docker Hub
@@ -32,9 +32,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Prepare variables for Docker tag
+        run: echo "DOCKER_USERNAME_LC=$(echo ${{ secrets.DOCKERHUB_USERNAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: jinrd/mave_searh:latest # 하드코딩하신 값
+          tags: ${{ env.DOCKER_USERNAME_LC }}/mave-search:latest
