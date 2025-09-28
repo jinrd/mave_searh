@@ -27,15 +27,24 @@ jobs:
       - name: Build with Maven (CI)
         run: ./mvnw clean package -DskipTests
 
+      # 5. Login to Docker Hub (원래 아이디 사용)
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 6. Docker Hub 아이디를 소문자로 변환하는 단계 (새로 추가)
+      - name: Convert username to lowercase
+        id: string
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: ${{ secrets.DOCKERHUB_USERNAME }}
+
+      # 7. Build and push Docker image (소문자로 변환된 아이디 사용)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mave_searh:latest
+          tags: ${{ steps.string.outputs.lowercase }}/mave_searh:latest
