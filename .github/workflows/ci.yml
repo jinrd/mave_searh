@@ -39,9 +39,13 @@ jobs:
         with:
           string: ${{ secrets.DOCKERHUB_USERNAME }}
 
+      # --- 디버깅을 위해 추가된 단계 ---
+      - name: Echo lowercase username
+        run: echo "The lowercase username is ${{ steps.string.outputs.lowercase }}"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: jinrd/mave_searh:latest
+          tags: ${{ steps.string.outputs.lowercase }}/mave_searh:latest
