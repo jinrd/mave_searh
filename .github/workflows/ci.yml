@@ -32,7 +32,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # 6. Docker Hub 아이디를 소문자로 변환하는 단계 (새로 추가)
       - name: Convert username to lowercase
