@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # 개발용으로 보안 비활성화
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data # 데이터 영속성을 위한 볼륨
+  embedding-server:
+    build: ./ai # ai 폴더에 Dockerfile 이 있다고 가정
+    container_name: embedding-server
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    # Python 서버가 필요한 경우 여기에 의존성 추가
+    # command: paython ai_server.py # Dockerfile 의 ENTRYPOINT 로 대체 가능
+  
+  app:
+    image: gkwlsdnjs95/mave_search:latest # Docker hub 에 푸시한 이미지
+    container_name: spring-app
+    ports:
+      - "8080:8080"
+    environment:
+    # Spring Boot 앱이 Elasticsearch 와 임베딩 서버에 접속할 주소
+    # Docker Compose 네트워크에서는 서비스 이름으로 접근 가능
+      - spring.elasticsearch.uris=http://elasticsearch:9200
+      - embedding.api.url=http://embedding-server:8000/embed
+      
+      # Ollama 는 호스트에서 실행된다고 가정하고, host.docker.internal 로 접근
+      - llm.api.url=http://host.docker.internal:11434/v1/chat/completions
+      - llm.api.key=OLLAMA
+      - llm.model.version=qwen2:1.5b
+      - elasticsearch.index.name=car-manuals
+    depends_on:
+      - elasticsearch
+      - embedding-server
+    networks:
+    - app-network
+  
+volumes:
+  esdata: # elasticsearch 데이터 볼륨 정의
+
+networks:
+  app-network: # 모든 서비스가 사용할 네트워크 정의
